@@ -97,9 +97,11 @@ namespace MeasureStatusMonitor
 		public string status = "";
 		public string endDate = "";
 		public string endTime = "";
+		public string delOperator = "";
+		public string testResult = "";
+
 		public bool isUpdate = false;
 		public DateTime targetDate;
-        List<Color> colorList = new List<Color>();
 
         public Form1()
         {
@@ -131,6 +133,9 @@ namespace MeasureStatusMonitor
 			ColumnHeader columnStatus;
 			ColumnHeader columnEndDate;
 			ColumnHeader columnEndTime;
+			ColumnHeader columnPriority;
+			ColumnHeader columnDelOperator;
+			ColumnHeader columnResult;
 
 			columnOperator = new ColumnHeader();
 			columnSeikeiki = new ColumnHeader();
@@ -144,6 +149,9 @@ namespace MeasureStatusMonitor
 			columnStatus = new ColumnHeader();
 			columnEndDate = new ColumnHeader();
 			columnEndTime = new ColumnHeader();
+			columnPriority = new ColumnHeader();
+			columnDelOperator = new ColumnHeader();
+			columnResult = new ColumnHeader();
 
             listView1.Sorting = SortOrder.None;
             listView1.ForeColor = Color.Black;//初期の色
@@ -161,12 +169,15 @@ namespace MeasureStatusMonitor
 			columnStatus.Text = "状態";
 			columnEndDate.Text = "終了日";
 			columnEndTime.Text = "終了時間";
+			columnPriority.Text = "優先度";
+			columnDelOperator.Text = "入力者";
+			columnResult.Text = "測定結果";
 
-			ColumnHeader[] colHeaderRegValue = {columnDate, columnTime, columnOperator, columnSeikeiki, columnGouki, columnHinshu, columnSleeveNo, columnCavNo, columnTairyu, columnStatus, columnEndDate, columnEndTime};
+			ColumnHeader[] colHeaderRegValue = {columnDate, columnTime, columnOperator, columnSeikeiki, columnGouki, columnHinshu, columnSleeveNo, columnCavNo, columnTairyu, columnStatus, columnEndDate, columnEndTime, columnPriority, columnDelOperator, columnResult};
 			listView1.Columns.AddRange(colHeaderRegValue);
 
 			//ヘッダの幅を自動調節
-            listView1.Font = new System.Drawing.Font("Times New Roman", 16, System.Drawing.FontStyle.Regular);
+            listView1.Font = new System.Drawing.Font("Times New Roman", 15, System.Drawing.FontStyle.Regular);
             listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
 
 
@@ -270,9 +281,8 @@ namespace MeasureStatusMonitor
 		{
 			//ListViewを一度クリアする
 			listView1.Items.Clear();
-			colorList.Clear();
 			
-			string[] item1 = {dateInfo, timeInfo, operatorName, seikeikiNo, goukiNo, hinshu, sleeveNo, cavNo, tairyuTime, status, endDate, endTime, priority};
+			string[] item1 = {dateInfo, timeInfo, operatorName, seikeikiNo, goukiNo, hinshu, sleeveNo, cavNo, tairyuTime, status, endDate, endTime, priority, delOperator, testResult};
 
             try
             {
@@ -306,24 +316,21 @@ namespace MeasureStatusMonitor
 
 					listView1.Items.Insert(0, new ListViewItem(item1));//先頭に追加
 
-					if(item1[12] == "最優先")
+					if(item1[9] == "測定終了")
 					{
-						listView1.Items[0].BackColor = Color.Red;//背景色
-						colorList.Insert(0, Color.Red);
+						listView1.Items[0].BackColor = Color.Gray;//背景色
 					}
-					else if(item1[12] == "優先")
+					else
 					{
-						listView1.Items[0].BackColor = Color.Yellow;//背景色
-						colorList.Insert(0, Color.Yellow);
-					}
-					else//通常
-					{
-						if(item1[9] == "測定終了")
+						if(item1[12] == "最優先")
 						{
-							listView1.Items[0].BackColor = Color.Gray;//背景色
-							colorList.Insert(0, Color.Gray);
+							listView1.Items[0].BackColor = Color.Red;//背景色
 						}
-						else
+						else if(item1[12] == "優先")
+						{
+							listView1.Items[0].BackColor = Color.Yellow;//背景色
+						}
+						else//通常
 						{
 							string strTime = item1[0] + " " + item1[1];
 							DateTime dTime = DateTime.Parse(strTime);
@@ -335,26 +342,22 @@ namespace MeasureStatusMonitor
 								if(0 < ts.Days)
 								{
 									listView1.Items[0].BackColor = Color.Orange;//背景色
-									colorList.Insert(0, Color.Orange);
 								}
 								else
 								{
 									if(ts.Hours < SETDATA.hourLimit)
 									{
 										listView1.Items[0].BackColor = Color.Lime;//背景色
-										colorList.Insert(0, Color.Lime);
 									}
 		                            else
 									{
 										listView1.Items[0].BackColor = Color.Orange;//背景色
-										colorList.Insert(0, Color.Orange);
 									}
 								}
 							}
 							else
 							{
 								listView1.Items[0].BackColor = Color.Magenta;//背景色
-								colorList.Insert(0, Color.Magenta);
 							}
 						}
 					}
@@ -369,7 +372,7 @@ namespace MeasureStatusMonitor
 		        System.Console.WriteLine(ex.Message);
 				LogFileOut(errorStr);
 			}
-			listView1.Font = new System.Drawing.Font("Times New Roman", 18, System.Drawing.FontStyle.Regular);
+			listView1.Font = new System.Drawing.Font("Times New Roman", 15, System.Drawing.FontStyle.Regular);
             //ヘッダの幅を自動調節
             listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
 		}
@@ -432,6 +435,8 @@ namespace MeasureStatusMonitor
 						buf += string.Format(",終了日");
 						buf += string.Format(",終了時間");
 						buf += string.Format(",優先度");
+						buf += string.Format(",入力者");
+						buf += string.Format(",測定結果");
 
 	                    sw.WriteLine(buf);
 
@@ -559,25 +564,24 @@ namespace MeasureStatusMonitor
 			status = "測定待ち";
 			endDate = "";
 			endTime = "";
+			delOperator = "";
+			testResult = "";
 			
-			string[] item1 = {dateInfo, timeInfo, operatorName, seikeikiNo, goukiNo, hinshu, sleeveNo, cavNo, tairyuTime, status, endDate, endTime, priority};
+			string[] item1 = {dateInfo, timeInfo, operatorName, seikeikiNo, goukiNo, hinshu, sleeveNo, cavNo, tairyuTime, status, endDate, endTime, priority, delOperator, testResult};
 
 			listView1.Items.Insert(0, new ListViewItem(item1));//先頭に追加
 
 			if(priority == "通常")
 			{
 				listView1.Items[0].BackColor = Color.Lime;//背景色
-				colorList.Insert(0, Color.Lime);
 			}
 			else if(priority == "最優先")
 			{
 				listView1.Items[0].BackColor = Color.Red;//背景色
-				colorList.Insert(0, Color.Red);
 			}
 			else if(priority == "優先")
 			{
 				listView1.Items[0].BackColor = Color.Yellow;//背景色
-				colorList.Insert(0, Color.Yellow);
 			}
             listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
 
@@ -649,7 +653,7 @@ namespace MeasureStatusMonitor
 			}
 
 			//CSVに出力する
-			string logBuf = dateInfo + "," + timeInfo + "," + operatorName + "," + seikeikiNo + "," + goukiNo + "," + hinshu + "," + sleeveNo + "," + cavNo + "," + tairyuTime + "," + status + "," + endDate + "," + endTime + "," + priority;
+			string logBuf = dateInfo + "," + timeInfo + "," + operatorName + "," + seikeikiNo + "," + goukiNo + "," + hinshu + "," + sleeveNo + "," + cavNo + "," + tairyuTime + "," + status + "," + endDate + "," + endTime + "," + priority + ",,";
 			WriteDataToCsv(logBuf);
 
 			//ログに出力する
@@ -842,37 +846,31 @@ namespace MeasureStatusMonitor
 							if(0 < ts.Days)
 							{
 								listView1.Items[index].BackColor = Color.Orange;//背景色
-								colorList[index] = Color.Orange;
 							}
 							else
 							{
 								if(ts.Hours < SETDATA.hourLimit)
 								{
 									listView1.Items[index].BackColor = Color.Lime;//背景色
-									colorList[index] = Color.Lime;
 								}
 		                        else
 								{
 									listView1.Items[index].BackColor = Color.Orange;//背景色
-									colorList[index] = Color.Orange;
 								}
 							}
 						}
 						else
 						{
 							listView1.Items[index].BackColor = Color.Magenta;//背景色
-							colorList[index] = Color.Magenta;
 						}
 					}
 					else if(priority == "最優先")
 					{
 						listView1.Items[index].BackColor = Color.Red;//背景色
-						colorList[index] = Color.Red;
 					}
 					else if(priority == "優先")
 					{
 						listView1.Items[index].BackColor = Color.Yellow;//背景色
-						colorList[index] = Color.Yellow;
 					}
 
 		            listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
@@ -996,6 +994,7 @@ namespace MeasureStatusMonitor
                     return;
                 }
 
+#if false
 				string delColumn = "測定終了したスリーブは" + "\r\n";
 	            delColumn += string.Format("登録者　：　　{0}さん", operatorName) + "\r\n";
 	            delColumn += string.Format("成型機　：　　{0}{1}号機", seikeikiNo, goukiNo) + "\r\n";
@@ -1007,107 +1006,131 @@ namespace MeasureStatusMonitor
 	            DialogResult result = MessageBox.Show(delColumn, "測定終了　選択", MessageBoxButtons.YesNo);
 
 				if(result == DialogResult.Yes)
+#else
+	            Form3 form3 = new Form3();
+				form3.SetInfo(operatorName, seikeikiNo, goukiNo, hinshu, sleeveNo, cavNo);
+	            form3.ShowDialog();
+
+	            InfoStr = form3.EditInfo;
+				form3.Dispose();
+
+	            if(InfoStr == "")
+	            {
+					timer1.Enabled = true;
+					return;
+				}
+
+				string[] cols = InfoStr.Split(',');
+				delOperator = cols[0];
+				testResult = cols[1];
+#endif
+				//CSVの更新
+                StreamReader reader = null;
+                StreamWriter writer = null;
+                string line = "";
+                string path = "";
+                string endStatus = "測定終了";
+				DateTime dt = DateTime.Now;
+				dateInfo = dt.ToString("yyyy/MM/dd");
+				timeInfo = dt.ToString("HH:mm:ss");
+				try
 				{
-					//CSVの更新
-	                StreamReader reader = null;
-	                StreamWriter writer = null;
-	                string line = "";
-	                string path = "";
-	                string endStatus = "測定終了";
-					DateTime dt = DateTime.Now;
-					dateInfo = dt.ToString("yyyy/MM/dd");
-					timeInfo = dt.ToString("HH:mm:ss");
-					try
+	                reader = new StreamReader(currentCsvFile, System.Text.Encoding.GetEncoding("Shift_JIS"));
+                    string[] lines = File.ReadAllLines(currentCsvFile);
+                    int lineMax = lines.Length;//CSVの行数取得
+
+                    path = currentCsvFile + ".tmp";
+					writer = new StreamWriter(path, false, System.Text.Encoding.GetEncoding("Shift_JIS"));
+
+					int count = 0;
+					int csvLen = 0;
+					while(reader.Peek() >= 0)
 					{
-		                reader = new StreamReader(currentCsvFile, System.Text.Encoding.GetEncoding("Shift_JIS"));
-	                    string[] lines = File.ReadAllLines(currentCsvFile);
-	                    int lineMax = lines.Length;//CSVの行数取得
+						line = reader.ReadLine();
 
-	                    path = currentCsvFile + ".tmp";
-						writer = new StreamWriter(path, false, System.Text.Encoding.GetEncoding("Shift_JIS"));
-
-						int count = 0;
-						int csvLen = 0;
-						while(reader.Peek() >= 0)
+						if(count == 0)
 						{
-							line = reader.ReadLine();
+							csvLen = line.Split(',').Length;
+						}
 
-							if(count == 0)
+						if((lineMax - 1) - index == count)
+						{
+							string[] linesub = line.Split(',');
+							string buf = "";
+
+							for(int i = 0; i < csvLen; i++)
 							{
-								csvLen = line.Split(',').Length;
-							}
-
-							if((lineMax - 1) - index == count)
-							{
-								string[] linesub = line.Split(',');
-								string buf = "";
-
-								for(int i = 0; i < csvLen; i++)
+								if(i == 0)
 								{
-									if(i == 0)
-									{
-										buf = linesub[i];
-									}
-									else if(i == 9)//状態
-									{
-										buf += "," + endStatus;
-									}
-									else if(i == 10)//終了日
-									{
-										buf += "," + dateInfo;
-									}
-									else if(i == 11)//終了時間
-									{
-										buf += "," + timeInfo;
-									}
-									else
-									{
-										buf += "," + linesub[i];
-									}
+									buf = linesub[i];
 								}
-								writer.WriteLine(buf);
+								else if(i == 9)//状態
+								{
+									buf += "," + endStatus;
+								}
+								else if(i == 10)//終了日
+								{
+									buf += "," + dateInfo;
+								}
+								else if(i == 11)//終了時間
+								{
+									buf += "," + timeInfo;
+								}
+								else if(i == 13)//入力者
+								{
+									buf += "," + delOperator;
+								}
+								else if(i == 14)//測定結果
+								{
+									buf += "," + testResult;
+								}
+								else
+								{
+									buf += "," + linesub[i];
+								}
 							}
-							else
-							{
-								writer.WriteLine(line);
-							}
-
-							count++;
+							writer.WriteLine(buf);
 						}
-
-			            listView1.Items[index].ForeColor = Color.Black;//初期の色
-			            listView1.Items[index].BackColor = Color.Gray;//背景色
-
-						listView1.Items[index].SubItems[9].Text = endStatus;
-						listView1.Items[index].SubItems[10].Text = dateInfo;
-						listView1.Items[index].SubItems[11].Text = timeInfo;
-			            listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
-			            
-			            colorList[index] = Color.Gray;
-					}
-					catch (System.IO.IOException ex)
-					{
-						string errorStr = "CSVファイルを開けなかった可能性があります";
-					    System.Console.WriteLine(errorStr);
-				        System.Console.WriteLine(ex.Message);
-						LogFileOut(errorStr);
-					}
-					finally
-					{
-						if(reader != null)
+						else
 						{
-							reader.Close();
-							//元ファイル削除
-							File.Delete(@currentCsvFile);
-						}
-						if(writer != null)
-						{
-							writer.Close();
-							//一時ファイル→元ファイルへファイル名変更
-							System.IO.File.Move(@path, @currentCsvFile);
+							writer.WriteLine(line);
 						}
 
+						count++;
 					}
+
+		            listView1.Items[index].ForeColor = Color.Black;//初期の色
+		            listView1.Items[index].BackColor = Color.Gray;//背景色
+
+					listView1.Items[index].SubItems[9].Text = endStatus;
+					listView1.Items[index].SubItems[10].Text = dateInfo;
+					listView1.Items[index].SubItems[11].Text = timeInfo;
+					listView1.Items[index].SubItems[13].Text = delOperator;
+					listView1.Items[index].SubItems[14].Text = testResult;
+		            listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
+				}
+				catch (System.IO.IOException ex)
+				{
+					string errorStr = "CSVファイルを開けなかった可能性があります";
+				    System.Console.WriteLine(errorStr);
+			        System.Console.WriteLine(ex.Message);
+					LogFileOut(errorStr);
+				}
+				finally
+				{
+					if(reader != null)
+					{
+						reader.Close();
+						//元ファイル削除
+						File.Delete(@currentCsvFile);
+					}
+					if(writer != null)
+					{
+						writer.Close();
+						//一時ファイル→元ファイルへファイル名変更
+						System.IO.File.Move(@path, @currentCsvFile);
+					}
+
 				}
 			}
 			else
@@ -1161,27 +1184,14 @@ namespace MeasureStatusMonitor
 			//ログに出力する
 			StatusFileOut(string.Format("{0}", openCount));
 
-			int redTotal = 0;
-			int yellowTotal = 0;
-			for(int i = 0; i < colorList.Count; i++)
-			{
-				if(colorList[i] == Color.Red)
-				{
-					redTotal++;
-				}
-				else if(colorList[i] == Color.Yellow)
-				{
-					yellowTotal++;
-				}
-			}
-			if(redTotal == 0)
+			if(redCount == 0)
 			{
 				timer5.Enabled = false;
 				label10.BackColor = Color.Red;
 				label11.BackColor = Color.Red;
 				label9.BackColor = Color.White;
 			}
-			if(yellowTotal == 0)
+			if(yellowCount == 0)
 			{
 				timer6.Enabled = false;
 				label12.BackColor = Color.Yellow;
@@ -1207,15 +1217,13 @@ namespace MeasureStatusMonitor
 			//ListViewを一度クリアする
 			listView1.Items.Clear();
 			
-//			colorList.Clear();
-
-			string[] item1 = {dateInfo, timeInfo, operatorName, seikeikiNo, goukiNo, hinshu, sleeveNo, cavNo, tairyuTime, status, endDate, endTime, priority};
+			string[] item1 = {dateInfo, timeInfo, operatorName, seikeikiNo, goukiNo, hinshu, sleeveNo, cavNo, tairyuTime, status, endDate, endTime, priority, delOperator, testResult};
 
             //CSVファイルのバックアップを行う。今のCSVを日付のCSVで作成し、測定待ちだけ残して再作成
             DateTime d = DateTime.Now;
             if(!isUpdate)
 			{
-				if(targetDate <= d)
+				if(targetDate <= d)//起動時初回、起動後毎日1回、終了非表示ボタン押下後にバックアップを取る
 				{
 					isUpdate = true;
 					targetDate = d.AddDays(1);
@@ -1278,9 +1286,20 @@ namespace MeasureStatusMonitor
                                 {
                                     if (fields[9] == "測定終了")//状態
                                     {
-										int tag = (lineMax - 1) - i;
-										colorList.RemoveAt(tag);
-										continue;
+										//終了時刻と現在時刻の差が1日以上過ぎていたらスキップする
+                                        string strTime = fields[10] + " " + fields[11];
+                                        DateTime dTime = DateTime.Parse(strTime);
+                                        DateTime dt = DateTime.Now;
+                                        TimeSpan ts = dt - dTime;
+
+                                        string diff_str = string.Format("{0}", ts.Days);
+                                        int diff_int = int.Parse(diff_str);
+										
+										if(diff_int > 0)
+										{
+											continue;
+										}
+
 									}
 								}
                                 
@@ -1335,20 +1354,16 @@ namespace MeasureStatusMonitor
 					if(item1[9] == "測定終了")
 					{
 						listView1.Items[0].BackColor = Color.Gray;//背景色
-
-						int tag = (lineMax - 1) - i;
-						colorList[tag] = Color.Gray;
 					}
 					else
 					{
-						int tag = (lineMax - 1) - i;
-						if(colorList[tag] == Color.Red)
+						if(item1[12] == "最優先")
 						{
 							listView1.Items[0].BackColor = Color.Red;
 							redCount++;
 							continue;
 						}
-						else if(colorList[tag] == Color.Yellow)
+						else if(item1[12] == "優先")
 						{
 							listView1.Items[0].BackColor = Color.Yellow;
 							yellowCount++;
@@ -1365,10 +1380,6 @@ namespace MeasureStatusMonitor
 							if(0 < ts.Days)
 							{
 								listView1.Items[0].BackColor = Color.Orange;//背景色
-
-								tag = (lineMax - 1) - i;
-								colorList[tag] = Color.Orange;
-
 								orangeCount++;
 							}
 							else
@@ -1376,19 +1387,11 @@ namespace MeasureStatusMonitor
 								if(ts.Hours < SETDATA.hourLimit)
 								{
 									listView1.Items[0].BackColor = Color.Lime;//背景色
-
-									tag = (lineMax - 1) - i;
-									colorList[tag] = Color.Lime;
-
 									greenCount++;
 								}
 		                        else
 								{
 									listView1.Items[0].BackColor = Color.Orange;//背景色
-
-									tag = (lineMax - 1) - i;
-									colorList[tag] = Color.Orange;
-
 									orangeCount++;
 								}
 							}
@@ -1396,10 +1399,6 @@ namespace MeasureStatusMonitor
 						else
 						{
 							listView1.Items[0].BackColor = Color.Magenta;//背景色
-
-							tag = (lineMax - 1) - i;
-							colorList[tag] = Color.Magenta;
-
 							magentaCount++;
 						}
 					}
@@ -1439,6 +1438,13 @@ namespace MeasureStatusMonitor
 					if(!System.IO.File.Exists(backupCsv))
 					{
 						System.IO.File.Move(@currentCsvFile, @backupCsv);
+
+						//CSV保存時の画面キャプチャを保存する
+						Bitmap bmp = new Bitmap(this.Width, this.Height);
+			            string dailyPng = backUpDir + "\\PgmMeasureInfo_" + result + ".png";
+						this.DrawToBitmap(bmp, new Rectangle(0, 0, this.Width, this.Height));
+						bmp.Save(dailyPng);
+						bmp.Dispose();
 					}
 
 				}
@@ -1459,7 +1465,7 @@ namespace MeasureStatusMonitor
 				}
 
 			}
-			listView1.Font = new System.Drawing.Font("Times New Roman", 18, System.Drawing.FontStyle.Regular);
+			listView1.Font = new System.Drawing.Font("Times New Roman", 15, System.Drawing.FontStyle.Regular);
             //ヘッダの幅を自動調節
             listView1.AutoResizeColumns(ColumnHeaderAutoResizeStyle.HeaderSize);
 
@@ -1535,8 +1541,6 @@ namespace MeasureStatusMonitor
 			{
 				int index = listView1.SelectedItems[0].Index;
                 listView1.Items[index].BackColor = Color.Yellow;
-
-				colorList[index] = Color.Yellow;
 
 				//背景色をカウント
 				int greenCount = 0;
@@ -1620,26 +1624,22 @@ namespace MeasureStatusMonitor
 					if(0 < ts.Days)
 					{
 						listView1.Items[index].BackColor = Color.Orange;//背景色
-						colorList[index] = Color.Orange;
 					}
 					else
 					{
 						if(ts.Hours < SETDATA.hourLimit)
 						{
 							listView1.Items[index].BackColor = Color.Lime;//背景色
-							colorList[index] = Color.Lime;
 						}
                         else
 						{
 							listView1.Items[index].BackColor = Color.Orange;//背景色
-							colorList[index] = Color.Orange;
 						}
 					}
 				}
 				else
 				{
 					listView1.Items[index].BackColor = Color.Magenta;//背景色
-					colorList[index] = Color.Magenta;
 				}
 
 				//背景色をカウント
@@ -1713,8 +1713,6 @@ namespace MeasureStatusMonitor
 			{
 				int index = listView1.SelectedItems[0].Index;
                 listView1.Items[index].BackColor = Color.Red;
-
-				colorList[index] = Color.Red;
 
 				//背景色をカウント
 				int greenCount = 0;
